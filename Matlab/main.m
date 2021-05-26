@@ -134,7 +134,12 @@ for m = 1:size(uplink_wind,1)
 end
 
 %%  Calculating SER for the File
-ser = sum(sum(repmat(sym,size(demod_sym_stack,1),1) ~= demod_sym_stack)) / prod(size(demod_sym_stack));
+ser = sum(sum(repmat(sym,size(demod_sym_stack(4:end,:),1),1) ~= demod_sym_stack(4:end,:))) / prod(size(demod_sym_stack(4:end,:)));
 disp('******************************************')
 disp(['Symbol Error Rate for this File = ' num2str(ser)])
+disp('*****************FINISHED*****************')
+%%  Calculating Symbol Throughput for the File
+ser = sum(sum(repmat(sym,size(demod_sym_stack(4:end,:),1),1) == demod_sym_stack(4:end,:))) / 60;    % 60 = duration of each aggregate Rate session
+disp('******************************************')
+disp(['Symbol Throughput for this file = ' num2str(ser)])
 disp('*****************FINISHED*****************')

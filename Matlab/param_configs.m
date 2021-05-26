@@ -20,7 +20,7 @@ function par = param_configs(id)
     SYNC1 = 8;
     SYNC2 = 16;
     
-    path = 'C:\Osama\Matlab_lt\CIC\low snr';            % Add path to the file
+    path = 'C:\Matlab_lt\CIC\low snr';            % Add path to the file
     fil_nm = '\60sec_perpkt_lowsnr';                    % File name
     
     
