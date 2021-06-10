@@ -10,10 +10,11 @@ BW = param_configs(2);
 Fs = param_configs(3);
 N = 2^SF;
 num_DC = param_configs(6);
+% thresholds
 corr_threshold = param_configs(8);      % Threshold above which we extract all Correlation peaks
 pnts_threshold = param_configs(9);      % Max. # of peaks to extract from Corrrelation Plot
 
-DC = conj(sym_to_data_ang([1],N));	% Generate standard downchirp
+DC = conj(sym_to_data_ang([1],N));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Cross Correlation with a Single downchirp
 Downchirp_ind = [];
@@ -41,7 +42,7 @@ corr_threshold =  4*sum(abs(Cross_Corr))/length(Cross_Corr);
 
 n_samp_array = [];
 peak_ind_prev = [];
-for i = 0:floor(length(Cross_Corr) / N)-1
+for i = 0:floor(length(Cross_Corr)/N)-1
     % windowing Cross-Correlation (window length N samples)
     wind = abs(Cross_Corr(i*N + 1 : (i+1) * N));                            
     % Extract Multiple Correlation Peaks
@@ -51,9 +52,10 @@ for i = 0:floor(length(Cross_Corr) / N)-1
             for k = 1:length(peak_ind_prev)
                 % check if combination of any two peaks in consecutive window are N samples apart
                 if(peak_ind_curr(j) == peak_ind_prev(k))                    
-                    n_samp_array = [n_samp_array  peak_ind_prev(k) + ((i - 1) * N) peak_ind_curr(j) + ((i) * N)];
+                    n_samp_array = [n_samp_array  peak_ind_prev(k)+((i-1)*N) peak_ind_curr(j)+((i)*N)];
                 end
-                % This extracts a list of all peaks that are N samples apart
+                % This extracts a list of all peaks that are N samples
+                % apart
             end
         end 
     end
@@ -68,14 +70,14 @@ for i = 1:length(n_samp_array)
         c = c + sum( n_samp_array == ind_arr(j) );
     end
     % Find from the list all the peaks that appear consecutively for
-    % more than 2 windows (Downchirp should give 3 peaks, N samples apart)
+    % more than 2 windows (Downchirp should give 3 peaks, N sampled apart)
     if( c >= 2 )
         Downchirp_ind = [Downchirp_ind; [ind_arr]];
     end
 end
 
 
-% filter Downchirps that are within 3 samples (same pkt detected twice due to peak energy spread)
+% filter Downchirps that are with in 3 samples (same pkt detected twice due to peak energy spread)
 temp = [];
 indices = [zeros(1,floor(num_DC)); Downchirp_ind];
 for i = 2:size(indices,1)
@@ -89,6 +91,7 @@ for i = 2:size(indices,1)
     end
 end
 Downchirp_ind = temp;
+
 
 end
 

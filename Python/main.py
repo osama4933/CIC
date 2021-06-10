@@ -10,13 +10,22 @@ from util import length
 from CIC_Demod import CIC_Demod
 import numpy as np
 import math
+import os.path
 import time
 
-num_nodes = 15
-num_data_sym = 28
-in_file_path = '15tx_0.5lm_1' # all relative to main.py
+###############################################################
+# all relative to main.py
+# REQUIRED PARAMS:
+in_file_path = '15tx_0.5lm_1' # Binary file containing samples to be demodulated
 symbols_out_path = 'symbols_out.txt'
 peaks_out_path = 'peaks.txt'
+
+# OPTIONAL PARAMS:
+# If a file is found at this path, this script will calculate and display a
+# Signal Error Rate (SER) after finishing demodulation.
+# See the sample file symbols_ground.txt for an example of the format.
+symbols_ground_truth_path = 'symbols_ground.txt' 
+###############################################################
 
 ## Loading variables
 # chirp variables
@@ -36,7 +45,11 @@ preamble_sym = 1
 pkt_len = num_preamble + num_sync + num_DC + num_data_sym
 num_samples = pkt_len * N
 # load true symbols
-sym = np.loadtxt('symbols.txt') # TODO: Figure this out! Probably want this to be a .mat file
+if os.path.exists(symbols_ground_truth_path):
+    sym = np.loadtxt(symbols_ground_truth_path)
+    calculate_SER = True
+else:
+    calculate_SER = False
 
 # Generating a Downchirp
 DC = np.conj(sym_to_data_ang([1],N))
@@ -52,6 +65,7 @@ x_1 = x_1[:int(math.floor(length(x_1) / upsampling_factor) * upsampling_factor)]
 x_1_dnsamp = x_1[::int(upsampling_factor)]        
 file_dur = length(x_1) / Fs
 
+print('Active session dechirping:')
 uplink_wind = active_sess_dechirp(x_1) - 1 # subtract 1 for indexing
 print('Detected ', len(uplink_wind), ' active sessions')
 
@@ -119,12 +133,15 @@ for m in range(uplink_wind.shape[0]):
 
 # Saving symbols and peaks to disk
 demod_sym_stack = np.array(demod_sym_stack)
-Peaks = np.array(Peaks[0])
 np.savetxt(symbols_out_path, demod_sym_stack, fmt="%i")
-np.savetxt(peaks_out_path, Peaks)
-# Calculating SER for the file
-ser = np.sum(np.tile(sym, (demod_sym_stack.shape[0], 1)) != demod_sym_stack) \
-    / np.prod(demod_sym_stack.shape)
-print('******************************************')
-print('Symbol Error Rate for this File = ', ser)
-print('*****************FINISHED*****************')
+if len(Peaks) != 0:
+    Peaks = np.array(Peaks[0])
+    np.savetxt(peaks_out_path, Peaks)
+
+if calculate_SER:
+    # Calculating SER for the file
+    ser = np.sum(np.tile(sym, (demod_sym_stack.shape[0], 1)) != demod_sym_stack) \
+        / np.prod(demod_sym_stack.shape)
+    print('******************************************')
+    print('Symbol Error Rate for this File = ', ser)
+    print('*****************FINISHED*****************')

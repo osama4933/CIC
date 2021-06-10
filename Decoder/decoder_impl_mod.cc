@@ -42,7 +42,7 @@ int pkts = -1;
 int pkt_counter = 0;
 std::vector<std::vector<uint32_t> > bin;
 std::vector<std::bitset<8> > num;
-std::fstream outfile("/home/Downloads/gr-lora-0.6.2/lib/files/bin_out_5tx.txt",std::ios_base::out);  // txt file, outputs bits
+std::fstream outfile("/home/Downloads/gr-lora-0.6.2/lib/files/bin_out.txt",std::ios_base::out);  // txt file, outputs bits
 
 namespace gr {
     namespace lora {
@@ -103,7 +103,7 @@ d_state = gr::lora::DecoderState::DECODE_HEADER;
 		std::cout << "SF: \t\t"         << d_sf       << std::endl;
 std::cout << "Header size : \t\t"         << sizeof(loraphy_header_t)       << std::endl;
 
-std::fstream myfile("/home/Downloads/gr-lora-0.6.2/lib/files/sym_out_5tx.txt",std::ios_base::in);		// text file, inputs symbols
+std::fstream myfile("/home/Downloads/gr-lora-0.6.2/lib/files/symbols.txt",std::ios_base::in);		// text file, inputs symbols
 
 	float a;
 bin.push_back(std::vector<uint32_t>());

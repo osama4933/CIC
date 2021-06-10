@@ -1,5 +1,5 @@
 function [out] = get_max(arr,threshold,num_pnts)
-%GET_MAX, this function returns until num_pnts many maximums above
+%GET_MAX, this function returns uptil num_pnts many maximums above
 % 'threshold'
 
     out = [];

@@ -48,35 +48,35 @@ for k = 1:size(Upchirp_ind,1)
             freq_off = [];
             % ind_temp contains the Frequency Bins around bin 1 where a
             % Preamble Peak can lie
-            ind_temp = [1:5 * n_pnt (N * n_pnt) - (4 * n_pnt):(N * n_pnt)];
+            ind_temp = [1:5*n_pnt (N*n_pnt)-(4*n_pnt):(N*n_pnt)];
             % iterate over all Preambles
             for j = 1:num_preamble
-                data_wind = Data_stack(m,Upchirp_ind(k,1) : Upchirp_ind(k,1) + (num_preamble*N) - 1);
-                data_fft(j,:) = abs(fft(data_wind((j - 1) * N + 1:j * N) .* DC(1:N),n_pnt * N));
+                data_wind = Data_stack(m,Upchirp_ind(k,1) : Upchirp_ind(k,1) + (num_preamble*N) -1);
+                data_fft(j,:) = abs(fft(data_wind((j-1)*N + 1:j*N) .* DC(1:N),n_pnt*N));
                 [~,c(j)] = max(data_fft(j,ind_temp));
                 c(j) = ind_temp(c(j));
                 % Handle -ve and +ve Frequency Offsets Accordingly
-                if(c(j) > (n_pnt * N) / 2)
-                    freq_off = [freq_off ((N * n_pnt) - c(j) ) / n_pnt];     % +ve offset
+                if(c(j) > (n_pnt*N)/2)
+                    freq_off = [freq_off ( (N*n_pnt) - c(j) ) / n_pnt];     % +ve offset
                 else
-                    freq_off = [freq_off (-1 * (c(j) - 1) / n_pnt)];          % -ve offset
+                    freq_off = [freq_off -1*( c(j) - 1 ) / n_pnt];          % -ve offset
                 end
             end
             % average the frequency offset of 6 middle Preambles
-            freq_off = sum( freq_off(2:num_preamble - 1) ) / (num_preamble - 2);
+            freq_off = sum( freq_off(2:num_preamble-1) ) / (num_preamble - 2);
             ffo = [ffo freq_off];
             % Correct for the Frequency Offset in corresponding Data_Stack
-            Data_freq_off(m,:) = Data_stack(m,:) .* exp((1i * 2 * pi * (freq_off ./ N)) .* (1:length(Data_stack(m,:))) );
+            Data_freq_off(m,:) = Data_stack(m,:) .* exp( (1i*2*pi*(freq_off./N)) .* (1:length(Data_stack(m,:))) );
             
             clear data_wind data_fft ind_temp
             % ind_temp contains the Frequency Bins around bin 1 where a
             % Preamble Peak can lie, assumption (-5*BW/2^SF <= Freq_off <= 5*BW/2^SF)
-            ind_temp = [1:5 (N - 4):N];
+            ind_temp = [1:5 (N-4):N];
             a = [];
             % for the frequency offset corrected Data Stack, find FFT of Preamble to get Peak Statistics 
             for j = 1:num_preamble
                 data_wind = Data_freq_off(m,Upchirp_ind(k,1) : Upchirp_ind(k,1) + (num_preamble*N) -1);
-                data_fft(j,:) = abs(fft(data_wind((j - 1) * N + 1:j * N) .* DC(1:N),N));
+                data_fft(j,:) = abs(fft(data_wind((j-1)*N + 1:j*N) .* DC(1:N),N));
                 [a(j),c(j)] = max(data_fft(j,ind_temp));
                 c(j) = ind_temp(c(j));
             end
@@ -94,7 +94,7 @@ for k = 1:size(Upchirp_ind,1)
             adj_ind = [];
             % row_ind contains the Frequency Rows around bin 1 where a
             % Preamble Peak can lie
-            row_ind = [N - 5:N 1:6];
+            row_ind = [N-5:N 1:6];
             count = 1;
             for i = row_ind
                 temp(count) = sum(abs(Spec(i,:)));
@@ -105,13 +105,13 @@ for k = 1:size(Upchirp_ind,1)
             [~,ind] = max(temp);
             pream_peak_ind = row_ind(ind);
             % Find row indices for Preamble row + 1 & - 1
-            adj_ind = [mod(pream_peak_ind - 1,N) mod(pream_peak_ind + 1,N)];
+            adj_ind = [mod(pream_peak_ind-1,N) mod(pream_peak_ind+1,N)];
             if(sum(adj_ind == 0) == 1)
                 adj_ind(find(adj_ind == 0)) = N;
             end
             % A good quality frequency track for a preamble is one that has
             % least energy leakage in adjacent rows (this promises very sharp FFT peaks)
-            freq_track_qual = (sum(abs(Spec(pream_peak_ind,:))) - sum(abs(Spec(adj_ind(1),:)))) + (sum(abs(Spec(pream_peak_ind,:))) - sum(abs(Spec(adj_ind(2),:))) );
+            freq_track_qual = ( sum(abs(Spec(pream_peak_ind,:))) - sum(abs(Spec(adj_ind(1),:))) ) + ( sum(abs(Spec(pream_peak_ind,:))) - sum(abs(Spec(adj_ind(2),:))) );
             in = [in freq_track_qual];
     end
     % choosing the best Data_stack based on maximum energy difference from

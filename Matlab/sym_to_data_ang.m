@@ -7,7 +7,6 @@ function [data] = sym_to_data_ang(symbol,N)
     for j = symbol
         phase = -pi + ((j-1)*(2*pi/(N)));
         temp = [];
-
         for i = 1:N
             accumulator = accumulator + phase;
             polar_radius = 1;

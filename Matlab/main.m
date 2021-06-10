@@ -8,8 +8,8 @@ SF = param_configs(1);
 BW = param_configs(2);
 Fs = param_configs(3);
 N = 2^SF;
-upsampling_factor = Fs / BW;
-Ts = 1 / Fs;
+upsampling_factor = Fs/BW;
+Ts = 1/Fs;
 
 % LORA pkt variables
 num_preamble = param_configs(4);
@@ -19,7 +19,6 @@ num_data_sym = param_configs(7);
 preamble_sym = 1;
 pkt_len = num_preamble + num_sync + num_DC + num_data_sym;
 num_samples = pkt_len * N;
-
 % load true symbols
 load('sym.mat')                                     
 
@@ -34,13 +33,13 @@ x_inter_1 = fread(fi_1,'float32');
 fclose(fi_1);
 
 % parse complex data
-x_1 = x_inter_1(1:2:end) + 1i * x_inter_1(2:2:end);	% Create complex values
+x_1 = x_inter_1(1:2:end) + 1i*x_inter_1(2:2:end);   % Read Complex values
 x_1 = x_1.';
 
 % file Duration
-t = [0:length(x_1)-1] / Fs;
+t = [0:length(x_1)-1]/Fs;
 
-x_1 = x_1(1:floor(length(x_1) / upsampling_factor) * upsampling_factor);
+x_1 = x_1(1:floor(length(x_1)/upsampling_factor)*upsampling_factor);
 x_1_dnsamp = x_1(1:upsampling_factor:end);
 file_dur = (length(x_1)/Fs);
 
@@ -50,7 +49,8 @@ xlabel('time/sec')
 ylabel('real magnitude')
 
 %%  Active Sessions Detection using Dechirping Windows
-uplink_wind = active_sess_dechirp(x_1);		% uplink_wind contains the [start,  end] indices of each active session detected
+uplink_wind = active_sess_dechirp(x_1);             % uplink_wind contains the [start,  end] indices of each active session detected
+uplink_wind = active_sess_split(uplink_wind, 10 * num_samples * upsampling_factor, 2.5 * upsampling_factor * N);    % split up sessions longer than 10 times packet length
 disp(['Detected ' num2str(size(uplink_wind,1)) ' active sessions'])
 %%
 demod_sym_stack = [];
@@ -61,18 +61,27 @@ for m = 1:size(uplink_wind,1)
     disp(['Active Session no. ' num2str(m)])
 
 %%      DC correlations to find LoRa pkts out of collision
+    
     temp_buff = [];
     temp_buff = x_1(uplink_wind(m,1) : uplink_wind(m,2));
-    temp_buff = temp_buff(:,1:floor(size(temp_buff,2) / upsampling_factor) * upsampling_factor);
+    temp_buff = temp_buff(:,1:floor(size(temp_buff,2)/upsampling_factor)*upsampling_factor);
 
-    DC_ind = DC_location_correlation(temp_buff(1:upsampling_factor:end));
-    disp(['Found ' num2str(size(DC_ind,1)) ' Downchirps in current Active session'])
-    
+        DC_ind = DC_location_correlation(temp_buff(1:upsampling_factor:end));
+        disp(['Found ' num2str(size(DC_ind,1)) ' Downchirps in current Active session'])
+        
     if(size(DC_ind,1) == 0)
         continue;
     end
+        if((DC_ind(end,1)*upsampling_factor + ((num_DC + num_data_sym)*N*upsampling_factor)) > length(temp_buff))
+            %   if a data portion of a packet is split then account for the
+            %   length difference
+            ex_samp = (DC_ind(end,1)*upsampling_factor + ((num_DC + num_data_sym)*N*upsampling_factor)) - length(temp_buff);
+            temp_buff = x_1(uplink_wind(m,1) : uplink_wind(m,2) + ex_samp);
+            temp_buff = temp_buff(:,1:floor(size(temp_buff,2)/upsampling_factor)*upsampling_factor);
+        end
+            
 
-%%      UC correlation to filter false positives and frequency offset & Packets' SNR estimation
+    %%      UC correlation to filter false positives and frequency offset & Packets' SNR estimation
     % All possible downsampled Buffers with different starting sample for downsampling
     Data_freq_off = [];
     Rx_Buff_dnsamp = [];
@@ -85,8 +94,8 @@ for m = 1:size(uplink_wind,1)
         continue;
     end
     
-    % for each preamble detected, choose the correct downsampled buffer with any frequency offset
-    % compensated and determine preamble peak heights to be used later for power-filtering
+    % for each Preamble detected, Choosing the correct downsampled buffer with any frequency offset
+    % been compensated and determining Preamble Peak heights to be used later for Power filtering
     [Data_freq_off, Peak, Upchirp_ind,FFO] = dnsamp_buff(Rx_Buff_dnsamp,Upchirp_ind);
 
     if(size(Upchirp_ind,1) == 0)
@@ -121,7 +130,6 @@ for m = 1:size(uplink_wind,1)
     Peak_amp = temp_peaks;
     
     disp(['Found ' num2str(size(Pream_ind,1)) ' Preambles in current Active session'])
-
     %%  Data Demodulation using CIC
     demod_sym = [];
     for j =1:size(Pream_ind,1)
@@ -134,12 +142,8 @@ for m = 1:size(uplink_wind,1)
 end
 
 %%  Calculating SER for the File
-ser = sum(sum(repmat(sym,size(demod_sym_stack(4:end,:),1),1) ~= demod_sym_stack(4:end,:))) / prod(size(demod_sym_stack(4:end,:)));
+ser = sum(sum(repmat(sym,size(demod_sym_stack,1),1) ~= demod_sym_stack)) / prod(size(demod_sym_stack));
 disp('******************************************')
 disp(['Symbol Error Rate for this File = ' num2str(ser)])
 disp('*****************FINISHED*****************')
-%%  Calculating Symbol Throughput for the File
-ser = sum(sum(repmat(sym,size(demod_sym_stack(4:end,:),1),1) == demod_sym_stack(4:end,:))) / 60;    % 60 = duration of each aggregate Rate session
-disp('******************************************')
-disp(['Symbol Throughput for this file = ' num2str(ser)])
-disp('*****************FINISHED*****************')
+symbol_reformat(demod_sym_stack);

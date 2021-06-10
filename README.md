@@ -34,7 +34,9 @@ order to compute 'Symbol Error Rate' or 'Symbol Throughput'
 5- The Symbol Error Rate/Symbol Throughput is computed and printed on command window. At the end, 
 'demod_sym_stack' (2D matrix) variable can be found. The number of rows indicate 
 the packets detected in the file. At each row, lies a demodulated packet whose 
-column contain corresponding demodulated symbols.
+column contain corresponding demodulated symbols. The demodulated symbols are also saved in 'symbols.txt'
+file, in a format(each row has symbol and packets are separated by -1 identifier) that 
+is needed to feed symbols to rpp0.
 
 
 
@@ -55,8 +57,11 @@ Experimental Setup has been Described in the Experimental_setup.pdf.
 
 # CIC-Python
 
-All the above instructions apply for Python version of CIC as well.
-
+-> Run pip install -r requirements.txt.
+-> Open param_configs.py and set SF, BW, Receiver Sampling Frequency and num of data symbols in a LoRa pkt accroding to your LoRa pkts' and receiver configuration.
+-> Open main.py and set appropriate path to the binary file that contains I/Q samples of LoRa signal in the variable named in_file_path.
+-> (Optional) In main.py, set symbols_ground_truth_path to the path to the text file containing the expected symbols in the input file. The ground truth file should contain rows of space-separated symbols, where each row corresponds to a packet. See symbols_ground.txt for an example of the format.
+-> Run python main.py. Demodulated symbols will be written to the file located at symbols_out_path, and peaks will be written to the file peaks_out_path.
 
 
 # Decoder
@@ -77,10 +82,10 @@ Look for 2 files'decoder_impl_mod.cc' & 'decoder_impl_mod.h'.
 Copy the contents of 2 files in the Decoder folder of CIC and then paste it to the above mentioned files (copy contents 
 of .cc to .cc and .h to .h files).
 
--> This modified version reads a text file as an input that contains demodulated symbols from CIC (file format: each row 
+-> This modified version reads a text file 'symbols.txt' as an input that contains demodulated symbols from CIC (file format: each row 
 of txt file contains a single symbol and packets are separated by -1 identifier) and outputs decoded bits 
 corresponding to each packet on a row in a text file.
 
 -> Add correct paths to the input and output text files in the LoRa-Class constructor.
 
--> Get the Decoded bits in the relevant bits output file.
+-> Get the Decoded bits in the relevant bits output file 'bin_out.txt'.

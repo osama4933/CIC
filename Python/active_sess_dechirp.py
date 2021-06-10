@@ -3,6 +3,7 @@ import numpy as np
 from util import length
 from sym_to_data_ang import sym_to_data_ang
 import math
+from tqdm import tqdm
 import time
 
 def active_sess_dechirp(x_1):
@@ -31,38 +32,27 @@ def active_sess_dechirp(x_1):
     mov_thresh_wind = 1000*win_jump_factor
     mov_thresh = 0
     mov_thresh_rec  = []
-    # t = time.perf_counter()
-    # s1 = 0
-    # s2 = 0
-    # s3 = 0
-    # s4 = 0
-    for i in range(math.floor(length(x_1)/win_jump) - win_jump_factor):#length(DC))
+    for i in tqdm(range(math.floor(length(x_1)/win_jump) - win_jump_factor)):
         
         wind = x_1[i*win_jump : i*win_jump+(N*upsampling_factor)]
-        # t1 = time.perf_counter()
         wind_fft = np.abs(np.fft.fft(wind * DC_upsamp)) # 17 sec
         wind_fft = wind_fft[np.concatenate([np.arange(N//2, dtype=int), \
                                             np.arange((N//2 + (upsampling_factor-1)*N), (upsampling_factor)*N, dtype=int)])]
         noise_floor = np.mean(wind_fft) # 4 sec
-        # s1 += time.perf_counter() - t1
         n.append(noise_floor)
         fft_peak = wind_fft.max(0)
         
-        # t1 = time.perf_counter()
         p.append(fft_peak)
         peak_gain.append(10*math.log10(fft_peak/noise_floor))
         
         if i+1 > mov_thresh_wind:
-            # t2 = time.perf_counter()
             mov_thresh = 1.3*np.mean(peak_gain[-mov_thresh_wind + 1:])
-            # s3 += time.perf_counter() - t2
             if mov_thresh > 6:
                 mov_thresh = 6
         else:
             mov_thresh = 1.3*np.mean(peak_gain)
             if mov_thresh > 6:
                 mov_thresh = 6
-        # s2 += time.perf_counter() - t1
         mov_thresh_rec.append(mov_thresh)
         
         if peak_gain[-1] >= mov_thresh:

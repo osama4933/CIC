@@ -26,14 +26,14 @@ Data_out = [];
 Peak_amp = [];
 % row_ind contains the Frequency Bins around bin 1 where a
 % Preamble Peak can lie, assumption (-6*BW/2^SF <= Freq_off <= 6*BW/2^SF)
-row_ind = [N - 4:N + 1 1:6];
+row_ind = [N-4:N+1 1:6];
 for m = 1:size(Upchirp_ind,1)
     % extract 8 Preamble long window
-    data_wind = Data_stack(m,Upchirp_ind(m,1) : Upchirp_ind(m,1) + ((num_preamble ) * N) - 1);
+    data_wind = Data_stack(m,Upchirp_ind(m,1) : Upchirp_ind(m,1) + ((num_preamble )*N) -1);
     close all
     % Compute STFT to accurately find the Preamble Frequency Bin and any
     % bin offset (if any left)
-    [Spec] = stft_v2(data_wind .* DC,N);
+    [Spec] = stft_v2(data_wind.*DC,N);
     temp = [];
     count = 1;
     for i = row_ind
@@ -53,18 +53,18 @@ for m = 1:size(Upchirp_ind,1)
     end
     
     % Extract windows corresponding to 2 SYNC-WORDS
-    sync_wind = Data_stack(m,Upchirp_ind(m,num_preamble) + N : Upchirp_ind(m,num_preamble) + N + (num_sync * N) - 1);
+    sync_wind = Data_stack(m,Upchirp_ind(m,num_preamble) + N : Upchirp_ind(m,num_preamble) + N + (num_sync*N) - 1);
     % compute the thresholds for SYNC WORD's Peak and perform dechirping + FFT
-    sync_threshold_up = Peak(m,1) + 0.5 * Peak(m,1);
-    sync_threshold_low = Peak(m,1) - 0.5 * Peak(m,1);
+    sync_threshold_up = Peak(m,1) + 0.5*Peak(m,1);
+    sync_threshold_low = Peak(m,1) - 0.5*Peak(m,1);
     
     sync_word1 = abs(fft(sync_wind(1:N).*DC(1:N)));
-    sync_word2 = abs(fft(sync_wind(N + 1:end).*DC(1:N)));
+    sync_word2 = abs(fft(sync_wind(N+1:end).*DC(1:N)));
     
-    if(sync_threshold_low < (2 * sum(sync_word1) / N))
-        sync_threshold_low = (2 * sum(sync_word1) / N);
-    elseif( sync_threshold_low < (2 * sum(sync_word2) / N))
-        sync_threshold_low = (2 * sum(sync_word2) / N);
+    if(sync_threshold_low < (2*sum(sync_word1)/N))
+        sync_threshold_low = (2*sum(sync_word1)/N);
+    elseif( sync_threshold_low < (2*sum(sync_word2)/N))
+        sync_threshold_low = (2*sum(sync_word2)/N);
     end
     
     % Extract Peaks qualifying Peak Thresholds

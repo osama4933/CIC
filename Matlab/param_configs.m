@@ -1,13 +1,12 @@
 function par = param_configs(id)
 
     % LoRa PHY transmitting parameters
-    LORA_SF = 8;		% LoRa spreading factor - 7, 8, 9, 10, 11, 12
-    LORA_BW = 250e3;		% LoRa bandwidth - 125e3, 250e3, 500e3
+    LORA_SF = 8;%12;            % LoRa spreading factor
+    LORA_BW = 250e3;%125e3;        % LoRa bandwidth
     
     % Receiving device parameters
-    Fs = 2e6;       		% recerver's sampling rate 
-    num_preamble = 8;		% num of Preamble Base Upchirps in a Lora Pkt
-
+    Fs = 2e6;%125e3*8;  % recerver's sampling rate 
+    num_preamble = 8;       % num of Preamble Base Upchirps in a Lora Pkt
     num_sync = 2;
     num_DC = 2.25;
     num_data_sym = 28;
@@ -20,7 +19,7 @@ function par = param_configs(id)
     SYNC1 = 8;
     SYNC2 = 16;
     
-    path = 'C:\Matlab_lt\CIC\low snr';            % Add path to the file
+    path = 'C:\Osama\Matlab_lt\CIC\low snr';            % Add path to the file
     fil_nm = '\60sec_perpkt_lowsnr';                    % File name
     
     
