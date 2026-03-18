@@ -42,7 +42,8 @@ is needed to feed symbols to rpp0.
 
 ******************************DATA***************************************************
 3 DataSets have been provided and can be accessed via following link
-https://uwprod-my.sharepoint.com/:f:/g/personal/mshahid2_wisc_edu/Es8DfWbahW1CpBdjv2uSdA8B1sB5Is1ljNPnTbVgE2-QKg?e=w2ABs8
+https://waynestateprod-my.sharepoint.com/:f:/g/personal/ic7043_wayne_edu/IgCq0PavhyZHT6CgC-6q1eOyAcf-8LupMlkoLLwd-4k9fAA?e=aXUYd0
+
 
 Naming Convention: '# of LoRa Tx in network'_'individual node's pkt rate'lm_1
  e.g. 20tx_1lm_1 -> 20 = '# of LoRa Tx in network'
